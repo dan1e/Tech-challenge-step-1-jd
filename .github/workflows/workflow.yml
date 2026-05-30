@@ -27,7 +27,7 @@ jobs:
         run: python -m pip install poetry
 
       - name: Install dependencies
-        run: poetry install --with dev
+        run: poetry install --with dev --no-root
 
       - name: Run Ruff
         run: poetry run ruff check .
