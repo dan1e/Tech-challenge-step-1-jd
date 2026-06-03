@@ -147,15 +147,41 @@ model = ChurnMLP(input_dim=46, hidden_sizes=[256, 128, 64], dropout_rates=[0.4, 
 
 ### `src/models/registry.py` — Catálogo de modelos
 
-**O que faz:** O dicionário `MODEL_REGISTRY` mapeia um nome para um modelo instanciado + seus hiperparâmetros. Inclui: DummyClassifier, Logistic Regression, Ridge, Decision Tree, Random Forest, MLP sklearn, CatBoost e XGBoost (quando instalados).
+**O que faz:** Define dois dicionários centrais:
 
-**Por que existe:** Para adicionar um novo modelo ao experimento, você só registra aqui — o pipeline e os notebooks pegam automaticamente. Sem esse padrão, você precisaria editar múltiplos arquivos e corria risco de esquecer de logar os parâmetros corretos no MLflow.
+- `MODEL_REGISTRY` — mapeia uma chave para modelo instanciado, hiperparâmetros e (opcionalmente) configuração do MLflow Model Registry
+- `PYTORCH_REGISTRY` — mesmo padrão para modelos PyTorch, que têm ciclo de treino próprio
+
+Cada entrada pode ter uma chave `"mlflow"` com a configuração completa de registro:
 
 ```python
-# Adicionar um novo modelo: só isso, em um lugar só
-MODEL_REGISTRY["meu_modelo"] = {
-    "model": MeuClassificador(param=valor),
-    "params": {"param": valor},
+MODEL_REGISTRY["logistic_regression"] = {
+    "model": LogisticRegression(...),
+    "params": {"C": 1.0, ...},
+    "mlflow": {
+        "model_description": "Regressão Logística — baseline linear...",
+        "version_description": "LogisticRegression com C=1.0 treinada na Etapa 1.",
+        "version_tags": {"stage": "etapa1", "framework": "sklearn"},
+        "version_alias": "baseline",
+    },
+}
+```
+
+Os notebooks desempacotam `**entry["mlflow"]` direto na chamada do `MLflowService`, sem duplicar nenhum valor.
+
+**Por que existe:** Fonte única de verdade para tudo que define um modelo — arquitetura, hiperparâmetros e metadados do Registry. Para adicionar um novo modelo ao experimento (incluindo descrição e alias no MLflow), você mexe apenas aqui.
+
+```python
+# Adicionar um novo modelo com config completa de Registry
+MODEL_REGISTRY["svm"] = {
+    "model": SVC(C=1.0, kernel="rbf", probability=True),
+    "params": {"C": 1.0, "kernel": "rbf"},
+    "mlflow": {
+        "model_description": "SVM RBF para o dataset Telco.",
+        "version_description": "SVM com C=1.0 e kernel RBF.",
+        "version_tags": {"stage": "etapa2", "framework": "sklearn"},
+        "version_alias": "challenger",
+    },
 }
 ```
 
@@ -196,7 +222,20 @@ METRICS_REGISTRY["pr_auc"] = lambda yt, _yp, prob: average_precision_score(yt, p
 - `log_sklearn_run()` — loga modelo sklearn, métricas, parâmetros e info do dataset
 - `log_pytorch_run()` — idem para PyTorch, mais a curva de loss por época
 
-**Por que existe:** Sem esse serviço, cada notebook chamaria `mlflow.log_metric()`, `mlflow.log_params()` etc. de forma diferente. Experimentos logados de forma inconsistente são difíceis de comparar na UI do MLflow. Centralizando aqui, todos os runs seguem o mesmo padrão.
+Quando `register=True`, ambos os métodos aceitam parâmetros opcionais para configurar a versão no **Model Registry**:
+
+| Parâmetro | O que configura no Registry |
+|---|---|
+| `model_description` | Descrição geral do modelo (aparece na página do modelo) |
+| `version_description` | Descrição da versão específica |
+| `version_tags` | Tags chave-valor na versão (ex: `stage`, `framework`) |
+| `version_alias` | Alias da versão (ex: `"champion"`, `"challenger"`) |
+
+Internamente o método `_configure_registered_version()` usa o `MlflowClient` para aplicar todas essas configurações logo após o registro.
+
+> Os valores dessas configurações **não ficam nos notebooks** — ficam centralizados em `src/models/registry.py` (chave `"mlflow"` de cada entrada). Os notebooks desempacotam com `**entry["mlflow"]`.
+
+**Por que existe:** Sem esse serviço, cada notebook chamaria `mlflow.log_metric()`, `mlflow.log_params()` etc. de forma diferente. Experimentos logados de forma inconsistente são difíceis de comparar na UI do MLflow. Centralizando aqui, todos os runs seguem o mesmo padrão — incluindo descrições e aliases no Registry.
 
 ---
 
@@ -415,3 +454,4 @@ Combine os passos acima. A ordem recomendada é:
 | Early stopping | `mlp_trainer.py` |
 | Linting com ruff | `pyproject.toml` + `Makefile` |
 | Testes automatizados | `src/tests/` |
+| Model Registry com descrição, tags e alias | `mlflow_service.py` + notebooks |
