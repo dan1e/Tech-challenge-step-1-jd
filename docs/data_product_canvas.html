@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Data Product Canvas | Jarvis | Telco Churn</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --primary:    #0a0a0a;
+      --primary-2:  #141414;
+      --surface:    #1c1c1c;
+      --surface-2:  #242424;
+      --border:     #2e2e2e;
+      --border-2:   #3a3a3a;
+      --text:       #e8e8e8;
+      --text-2:     #a0a0a0;
+      --accent:     #e2e2e2;
+      --accent2:    #c8c8c8;
+
+      --high:       #ff6b6b;
+      --high-bg:    #2a1414;
+      --high-border:#4a1f1f;
+      --medium:     #ffa94d;
+      --medium-bg:  #2a1e0a;
+      --medium-border:#4a3010;
+      --low:        #69db7c;
+      --low-bg:     #0e2a14;
+      --low-border: #1a4a20;
+
+      --tag-bg:     #1e1e1e;
+      --tag-color:  #b0b0b0;
+      --tag-border: #333333;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'DM Sans', system-ui, sans-serif;
+      background: var(--primary);
+      color: var(--text);
+      min-height: 100vh;
+      font-size: 15px;
+    }
+
+    /* ── HEADER ── */
+    header {
+      background: var(--primary-2);
+      border-bottom: 1px solid var(--border);
+      padding: 40px 48px 32px;
+      position: relative;
+      overflow: hidden;
+    }
+    header::after {
+      content: '';
+      position: absolute;
+      right: -80px; top: -80px;
+      width: 320px; height: 320px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.02);
+      pointer-events: none;
+    }
+    .header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .header-badge {
+      background: var(--surface);
+      border: 1px solid var(--border-2);
+      border-radius: 24px;
+      padding: 6px 18px;
+      font-size: 12px;
+      letter-spacing: .5px;
+      color: var(--text-2);
+      font-weight: 500;
+    }
+    .header-meta {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 6px;
+    }
+    .meta-chip {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 4px 14px;
+      font-size: 12px;
+      color: var(--text-2);
+    }
+    .canvas-label {
+      display: inline-block;
+      background: var(--text);
+      color: var(--primary);
+      font-weight: 700;
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 4px 12px;
+      border-radius: 3px;
+      margin-bottom: 16px;
+    }
+    h1 {
+      font-size: clamp(24px, 3vw, 34px);
+      font-weight: 700;
+      line-height: 1.15;
+      margin: 0 0 10px;
+      color: var(--text);
+      letter-spacing: -.5px;
+    }
+    .subtitle {
+      font-size: 14px;
+      color: var(--text-2);
+      font-weight: 400;
+      line-height: 1.6;
+      max-width: 720px;
+    }
+
+    /* ── GRID ── */
+    .canvas-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: var(--border);
+      margin: 32px 40px 48px;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+
+    /* ── CARD ── */
+    .card {
+      background: var(--surface);
+      padding: 24px 26px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .card:hover { background: var(--surface-2); }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .card-icon {
+      width: 32px; height: 32px;
+      border-radius: 6px;
+      background: var(--primary-2);
+      border: 1px solid var(--border-2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+    .card-title {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-2);
+    }
+    .card-body {
+      font-size: 13.5px;
+      line-height: 1.7;
+      color: var(--text);
+      text-align: left;
+    }
+
+    /* span helpers */
+    .span-2 { grid-column: span 2; }
+    .span-3 { grid-column: span 3; }
+
+    /* ── TAGS ── */
+    .tags { display: flex; flex-wrap: wrap; gap: 6px; }
+    .tag {
+      background: var(--tag-bg);
+      color: var(--tag-color);
+      border: 1px solid var(--tag-border);
+      border-radius: 4px;
+      padding: 3px 10px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+    .tag.high   { background: var(--high-bg);   color: var(--high);   border-color: var(--high-border); }
+    .tag.medium { background: var(--medium-bg); color: var(--medium); border-color: var(--medium-border); }
+    .tag.low    { background: var(--low-bg);    color: var(--low);    border-color: var(--low-border); }
+    .tag.light  { background: var(--primary-2); color: var(--accent2); border-color: var(--border-2); }
+
+    /* ── LIST ── */
+    ul.clean { list-style: none; display: flex; flex-direction: column; gap: 7px; }
+    ul.clean li {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      font-size: 13.5px;
+      line-height: 1.6;
+      text-align: left;
+    }
+    ul.clean li::before {
+      content: '›';
+      color: var(--text-2);
+      font-size: 15px;
+      line-height: 1.5;
+      flex-shrink: 0;
+    }
+
+    /* ── METRIC TABLE ── */
+    .metric-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 9px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 13.5px;
+    }
+    .metric-row:last-child { border-bottom: none; }
+    .metric-label { color: var(--text-2); }
+    .metric-value { font-weight: 600; color: var(--text); font-family: 'DM Mono', monospace; }
+
+    /* ── DIVIDER ── */
+    .divider {
+      border: none;
+      border-top: 1px solid var(--border);
+    }
+
+    /* ── RELEVANCE GROUPS ── */
+    .rel-group { margin-bottom: 12px; }
+    .rel-group:last-child { margin-bottom: 0; }
+    .rel-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 7px;
+    }
+    .rel-label.high   { color: var(--high); }
+    .rel-label.medium { color: var(--medium); }
+    .rel-label.low    { color: var(--low); }
+
+    /* ── PIPELINE ── */
+    .pipeline {
+      display: flex;
+      align-items: stretch;
+      flex-wrap: wrap;
+      gap: 0;
+    }
+    .pipe-step {
+      background: var(--primary-2);
+      border: 1px solid var(--border-2);
+      border-radius: 6px;
+      padding: 10px 16px;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--text);
+      text-align: center;
+      line-height: 1.5;
+    }
+    .pipe-step small {
+      display: block;
+      font-weight: 400;
+      font-size: 11px;
+      color: var(--text-2);
+      margin-top: 2px;
+    }
+    .pipe-arrow {
+      color: var(--border-2);
+      font-size: 20px;
+      padding: 0 8px;
+      display: flex;
+      align-items: center;
+    }
+
+    /* ── CODE ── */
+    code {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      background: var(--primary-2);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      padding: 1px 6px;
+      color: var(--accent2);
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      text-align: center;
+      padding: 20px;
+      font-size: 12px;
+      color: var(--text-2);
+      border-top: 1px solid var(--border);
+    }
+
+    @media (max-width: 900px) {
+      .canvas-grid { grid-template-columns: 1fr 1fr; margin: 20px; }
+      .span-3 { grid-column: span 2; }
+    }
+    @media (max-width: 600px) {
+      .canvas-grid { grid-template-columns: 1fr; margin: 12px; }
+      .span-2, .span-3 { grid-column: span 1; }
+      header { padding: 28px 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="header-top">
+    <div>
+      <span class="canvas-label">Data Product Canvas</span>
+      <div class="header-meta">
+        <span class="meta-chip">Grupo Jarvis</span>
+        <span class="meta-chip">PosTech MLE · FIAP</span>
+        <span class="meta-chip">Fase 1 · Etapas 1 e 2</span>
+      </div>
+    </div>
+    <span class="header-badge">Tech Challenge · Fase 1</span>
+  </div>
+  <h1>Previsão de Churn · Telco Customer</h1>
+  <p class="subtitle">Pipeline end-to-end de ML: do dado bruto ao modelo rastreado com MLflow. MLP PyTorch comparado com baselines Scikit-Learn.</p>
+</header>
+
+<!-- GRID -->
+<div class="canvas-grid">
+
+  <!-- 1. PROBLEMA DE NEGÓCIO -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon">🎯</div>
+      <span class="card-title">Problema de Negócio</span>
+    </div>
+    <div class="card-body">
+      <ul class="clean">
+        <li>Operadora de telecom perdendo clientes em ritmo acelerado</li>
+        <li>Taxa de churn atual: <strong>26,5%</strong> (1.869 de 7.043 clientes)</li>
+        <li>Identificar clientes em risco <em>antes</em> do cancelamento</li>
+        <li>Permitir ações proativas de retenção: desconto, ligação, oferta especial</li>
+      </ul>
+    </div>
+    <hr class="divider"/>
+    <div class="tags">
+      <span class="tag high">Churn 26,5%</span>
+      <span class="tag light">Classificação Binária</span>
+      <span class="tag light">Retenção de Clientes</span>
+    </div>
+  </div>
+
+  <!-- 2. CONSUMIDORES -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon">👤</div>
+      <span class="card-title">Consumidores do Produto</span>
+    </div>
+    <div class="card-body">
+      <ul class="clean">
+        <li><strong>Time de Retenção</strong>: lista diária de clientes em risco para ação</li>
+        <li><strong>Diretoria</strong>: KPIs de churn evitado no dashboard executivo</li>
+        <li><strong>CRM / Sistemas internos</strong>: integração via API FastAPI</li>
+        <li><strong>Engenharia de ML</strong>: rastreabilidade via MLflow Registry</li>
+      </ul>
+    </div>
+    <hr class="divider"/>
+    <div class="tags">
+      <span class="tag">Time de Retenção</span>
+      <span class="tag">Diretoria</span>
+      <span class="tag">CRM</span>
+      <span class="tag">MLOps</span>
+    </div>
+  </div>
+
+  <!-- 3. FONTES DE DADOS -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon">🗄️</div>
+      <span class="card-title">Fontes de Dados</span>
+    </div>
+    <div class="card-body">
+      <ul class="clean">
+        <li><strong>Dataset:</strong> WA_Fn-UseC_-Telco-Customer-Churn (IBM)</li>
+        <li><strong>Volume:</strong> 7.043 clientes · 20 variáveis · 11 removidos por nulos</li>
+        <li><strong>Tipo:</strong> dados tabulares estáticos (CSV)</li>
+        <li><strong>Integridade:</strong> SHA-256 registrado no MLflow por run</li>
+      </ul>
+    </div>
+    <hr class="divider"/>
+    <div class="tags">
+      <span class="tag light">7.043 registros</span>
+      <span class="tag light">20 features</span>
+      <span class="tag low">Dados limpos</span>
+    </div>
+  </div>
+
+  <!-- 4. FEATURES -->
+  <div class="card span-2">
+    <div class="card-header">
+      <div class="card-icon">📊</div>
+      <span class="card-title">Features Relevantes para Predição</span>
+    </div>
+    <div class="card-body">
+      <div class="rel-group">
+        <div class="rel-label high">Altíssima Relevância</div>
+        <div class="tags">
+          <span class="tag high">Contract (2,8% a 42,7%)</span>
+          <span class="tag high">tenure (corr. -0,35)</span>
+          <span class="tag high">InternetService (fibra 41,9%)</span>
+          <span class="tag high">OnlineSecurity (sem: 41,8%)</span>
+          <span class="tag high">TechSupport (sem: 41,6%)</span>
+          <span class="tag high">PaymentMethod (cheque: 45,3%)</span>
+        </div>
+      </div>
+      <div class="rel-group">
+        <div class="rel-label medium">Alta Relevância</div>
+        <div class="tags">
+          <span class="tag medium">PaperlessBilling (33,6%)</span>
+          <span class="tag medium">MonthlyCharges (corr. +0,19)</span>
+          <span class="tag medium">Partner (33% vs 20%)</span>
+          <span class="tag medium">Dependents (31% vs 16%)</span>
+          <span class="tag medium">SeniorCitizen (42% vs 24%)</span>
+        </div>
+      </div>
+      <div class="rel-group">
+        <div class="rel-label low">Baixa / Irrelevante (excluídas)</div>
+        <div class="tags">
+          <span class="tag low">gender</span>
+          <span class="tag low">customerID</span>
+          <span class="tag low">PhoneService</span>
+          <span class="tag low">StreamingTV</span>
+          <span class="tag low">StreamingMovies</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. MODELOS -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon">🧠</div>
+      <span class="card-title">Modelos e Transformações</span>
+    </div>
+    <div class="card-body">
+      <ul class="clean">
+        <li><strong>Pré-processamento:</strong> StandardScaler + OneHotEncoder</li>
+        <li><strong>Baselines:</strong> DummyClassifier, LogisticRegression</li>
+        <li><strong>Ensembles:</strong> RandomForest, XGBoost, CatBoost, DecisionTree, Ridge, MLP sklearn</li>
+        <li><strong>Modelo principal:</strong> MLP PyTorch [128 → 64 → 32] com Dropout, Early Stopping e BCEWithLogitsLoss</li>
+      </ul>
+    </div>
+    <hr class="divider"/>
+    <div class="tags">
+      <span class="tag">PyTorch</span>
+      <span class="tag">Scikit-Learn</span>
+      <span class="tag">Early Stopping</span>
+    </div>
+  </div>
+
+  <!-- 6. PIPELINE -->
+  <div class="card span-3">
+    <div class="card-header">
+      <div class="card-icon">⚙️</div>
+      <span class="card-title">Pipeline de Dados e Modelagem</span>
+    </div>
+    <div class="card-body">
+      <div class="pipeline">
+        <span class="pipe-step">📂 churn.csv</span>
+        <span class="pipe-arrow">›</span>
+        <span class="pipe-step">🧹 ChurnDataLoader<small>limpeza · split · hash SHA-256</small></span>
+        <span class="pipe-arrow">›</span>
+        <span class="pipe-step">⚗️ Pré-processamento<small>StandardScaler + OneHotEncoder</small></span>
+        <span class="pipe-arrow">›</span>
+        <span class="pipe-step">🤖 Treino<small>SklearnTrainer / PyTorchMLPTrainer</small></span>
+        <span class="pipe-arrow">›</span>
+        <span class="pipe-step">📈 MLflowService<small>params · métricas · artefatos · registry</small></span>
+        <span class="pipe-arrow">›</span>
+        <span class="pipe-step">🚀 FastAPI<small>/predict · /health</small></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. OUTPUT -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon">📦</div>
+      <span class="card-title">Produto de Dados: Output</span>
+    </div>
+    <div class="card-body">
+      <ul class="clean">
+        <li><strong>Score de risco</strong> de churn por cliente (0 a 1)</li>
+        <li><strong>Classificação binária</strong>: vai ou não vai cancelar</li>
+        <li><strong>Lista diária</strong> de clientes em risco via batch</li>
+        <li><strong>Endpoint REST</strong> <code>/predict</code> via FastAPI</li>
+        <li><strong>Artefato registrado</strong> no MLflow Model Registry com alias e versão</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- 8. MÉTRICAS -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon">📐</div>
+      <span class="card-title">Métricas de Sucesso</span>
+    </div>
+    <div class="card-body">
+      <div class="metric-row">
+        <span class="metric-label">ROC-AUC (principal)</span>
+        <span class="metric-value">LR: 0.836</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">F1-Macro</span>
+        <span class="metric-value">LR: 0.740</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">MLP PyTorch AUC</span>
+        <span class="metric-value">0.829</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">Custo FN (churn não detectado)</span>
+        <span class="metric-value">R$ 500</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">Custo FP (retenção desnecessária)</span>
+        <span class="metric-value">R$ 50</span>
+      </div>
+    </div>
+    <hr class="divider"/>
+    <div class="tags">
+      <span class="tag light">Validação Cruzada 5-fold</span>
+      <span class="tag light">AUC média: 0.845</span>
+    </div>
+  </div>
+
+  <!-- 9. LGPD -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon">🔒</div>
+      <span class="card-title">Governança e Privacidade (LGPD)</span>
+    </div>
+    <div class="card-body">
+      <ul class="clean">
+        <li><strong>customerID</strong> removido: identificador direto, não entra no modelo</li>
+        <li><strong>gender</strong> excluído: irrelevante preditivamente e risco de viés</li>
+        <li>Dados anonimizados: nenhum PII sensível no conjunto de treino</li>
+        <li>Conformidade LGPD verificada antes da modelagem</li>
+        <li>SHA-256 do dataset registrado por run para rastreabilidade</li>
+      </ul>
+    </div>
+    <hr class="divider"/>
+    <div class="tags">
+      <span class="tag low">LGPD Compliant</span>
+      <span class="tag low">Sem PII</span>
+      <span class="tag low">Anonimizado</span>
+    </div>
+  </div>
+
+  <!-- 10. SLA -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon">☁️</div>
+      <span class="card-title">SLA e Arquitetura de Deploy</span>
+    </div>
+    <div class="card-body">
+      <ul class="clean">
+        <li><strong>Modo:</strong> Batch, processamento noturno com lista diária de risco</li>
+        <li><strong>API:</strong> FastAPI com <code>/predict</code> e <code>/health</code> via Pydantic</li>
+        <li><strong>Latência:</strong> batch tolerante a delay; real-time disponível via endpoint</li>
+        <li><strong>Reprodutibilidade:</strong> seeds fixados, <code>pyproject.toml</code>, Poetry lock</li>
+        <li><strong>Deploy opcional:</strong> AWS, Azure ou GCP na Etapa 4</li>
+      </ul>
+    </div>
+    <hr class="divider"/>
+    <div class="tags">
+      <span class="tag">Batch + API</span>
+      <span class="tag">FastAPI</span>
+      <span class="tag light">Reprodutível</span>
+    </div>
+  </div>
+
+  <!-- 11. RASTREABILIDADE -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon">🔍</div>
+      <span class="card-title">Rastreabilidade via MLflow</span>
+    </div>
+    <div class="card-body">
+      <ul class="clean">
+        <li><strong>Tracking:</strong> parâmetros, métricas e artefatos por run</li>
+        <li><strong>Model Registry:</strong> versionamento com alias <em>baseline</em> e <em>challenger</em></li>
+        <li><strong>Version tags:</strong> stage, model_family e framework por versão</li>
+        <li><strong>Descrições:</strong> centralizadas em <code>registry.py</code>, desempacotadas nos notebooks</li>
+        <li><strong>Dataset hash:</strong> SHA-256 registrado para reprodutibilidade</li>
+      </ul>
+    </div>
+    <hr class="divider"/>
+    <div class="tags">
+      <span class="tag">MLflow 3.x</span>
+      <span class="tag light">Model Registry</span>
+      <span class="tag light">Alias e Tags</span>
+    </div>
+  </div>
+
+  <!-- 12. MONITORAMENTO -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon">📡</div>
+      <span class="card-title">Monitoramento e Próximos Passos</span>
+    </div>
+    <div class="card-body">
+      <ul class="clean">
+        <li><strong>Drift de dados:</strong> monitorar distribuição de features críticas (tenure, Contract)</li>
+        <li><strong>Degradação do modelo:</strong> acompanhar AUC e F1 em produção</li>
+        <li><strong>Alerta:</strong> queda de AUC acima de 5% dispara retreino</li>
+        <li><strong>Retreino:</strong> periódico ou orientado por drift detectado</li>
+        <li><strong>Etapa 4:</strong> Model Card completo com plano de monitoramento formal</li>
+      </ul>
+    </div>
+    <hr class="divider"/>
+    <div class="tags">
+      <span class="tag medium">Data Drift</span>
+      <span class="tag medium">Model Decay</span>
+      <span class="tag light">Retreino Automático</span>
+    </div>
+  </div>
+
+  <!-- 13. STACK -->
+  <div class="card span-3">
+    <div class="card-header">
+      <div class="card-icon">🛠️</div>
+      <span class="card-title">Stack Técnica e Boas Práticas</span>
+    </div>
+    <div class="card-body" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:20px;">
+      <div>
+        <div style="font-size:10px;font-weight:700;color:var(--text-2);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Modelagem</div>
+        <div class="tags" style="flex-direction:column;gap:5px;">
+          <span class="tag">PyTorch 2.x: MLP</span>
+          <span class="tag">Scikit-Learn: baselines</span>
+          <span class="tag">MLflow 3.x: tracking</span>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:10px;font-weight:700;color:var(--text-2);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">API e Testes</div>
+        <div class="tags" style="flex-direction:column;gap:5px;">
+          <span class="tag">FastAPI + Pydantic</span>
+          <span class="tag">pytest com 3 testes ou mais</span>
+          <span class="tag">Smoke · Schema · API</span>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:10px;font-weight:700;color:var(--text-2);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Qualidade de Código</div>
+        <div class="tags" style="flex-direction:column;gap:5px;">
+          <span class="tag">ruff: linting</span>
+          <span class="tag">Poetry + pyproject.toml</span>
+          <span class="tag">Makefile: lint · test · run</span>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:10px;font-weight:700;color:var(--text-2);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Boas Práticas</div>
+        <div class="tags" style="flex-direction:column;gap:5px;">
+          <span class="tag low">Seeds fixados (random_state=42)</span>
+          <span class="tag low">Logging estruturado, sem print()</span>
+          <span class="tag low">Validação cruzada estratificada</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <strong>Grupo Jarvis</strong> · PosTech Machine Learning Engineering · FIAP ·
+  Tech Challenge Fase 1 · Dataset: Telco Customer Churn (IBM) ·
+  github.com/Cecilia-Rocha
+</footer>
+
+</body>
+</html>
